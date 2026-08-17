@@ -2,11 +2,16 @@ package com.hydromart.service;
 
 import java.util.List;
 
+import com.hydromart.dto.auth.AuthResponse;
+import com.hydromart.dto.auth.LoginRequest;
 import com.hydromart.dto.auth.RegisterRequest;
+import com.hydromart.dto.auth.RegisterResponse;
 import com.hydromart.entity.User;
 
 public interface UserService {
-	User registerUser(RegisterRequest request);
+	RegisterResponse registerUser(RegisterRequest request);
+	
+	AuthResponse loginUser(LoginRequest request);
 	
 	User getUserById(Long id);
 	
