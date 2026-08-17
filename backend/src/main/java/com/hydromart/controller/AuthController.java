@@ -1,6 +1,7 @@
 package com.hydromart.controller;
 
 import org.springframework.http.ResponseEntity;
+
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -10,7 +11,6 @@ import com.hydromart.dto.auth.AuthResponse;
 import com.hydromart.dto.auth.LoginRequest;
 import com.hydromart.dto.auth.RegisterRequest;
 import com.hydromart.dto.auth.RegisterResponse;
-import com.hydromart.entity.User;
 import com.hydromart.service.UserService;
 
 import lombok.RequiredArgsConstructor;
