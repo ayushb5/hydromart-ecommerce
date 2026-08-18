@@ -1,12 +1,14 @@
 package com.hydromart.entity;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -23,6 +25,9 @@ public class Category {
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Long id;
+	
+	@OneToMany(mappedBy = "category")
+	private List<Product> products;
 
 	@Column(nullable = false, unique = true)
 	private String name;
@@ -31,7 +36,7 @@ public class Category {
 	private String slug;
 	private String description;
 	private String imageUrl;
-	private boolean isActive;
+	private boolean active;
 	private LocalDateTime createdAt;
 	private LocalDateTime updatedAt;
 }

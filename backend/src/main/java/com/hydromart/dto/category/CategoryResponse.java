@@ -17,7 +17,7 @@ public class CategoryResponse {
 	private String slug;
 	private String description;
 	private String imageUrl;
-	private boolean isActive;
+	private boolean active;
 	private LocalDateTime createdAt;
 	private LocalDateTime updatedAt;
 }

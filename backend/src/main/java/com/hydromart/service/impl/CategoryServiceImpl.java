@@ -100,6 +100,18 @@ public class CategoryServiceImpl implements CategoryService {
 		Category updatedCategory = categoryRepository.save(category);
 		return mapToResponse(updatedCategory);
 	}
+	
+	@Override
+	public CategoryResponse updateCategoryStatus(Long id, boolean isActive) {
+		Category category=categoryRepository.findById(id)
+				.orElseThrow(()->new CategoryNotFoundException("Category not found"));
+		
+		category.setActive(isActive);
+		category.setUpdatedAt(LocalDateTime.now());
+		
+		Category updatedCategory=categoryRepository.save(category);
+		return mapToResponse(updatedCategory);
+	}
 
 	@Override
 	public void deleteCategory(Long id) {
@@ -108,5 +120,7 @@ public class CategoryServiceImpl implements CategoryService {
 		
 		categoryRepository.delete(category);
 	}
+
+	
 
 }

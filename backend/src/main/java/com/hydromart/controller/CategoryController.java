@@ -5,6 +5,7 @@ import java.util.List;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
@@ -14,6 +15,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.hydromart.dto.category.CategoryRequest;
 import com.hydromart.dto.category.CategoryResponse;
+import com.hydromart.dto.common.StatusUpdateRequest;
 import com.hydromart.service.CategoryService;
 
 import jakarta.validation.Valid;
@@ -43,6 +45,11 @@ public class CategoryController {
 	@PutMapping("/{id}")
 	public ResponseEntity<CategoryResponse> updateCategory(@PathVariable Long id, @RequestBody @Valid CategoryRequest request){
 		return ResponseEntity.ok(categoryService.updateCategory(id, request));
+	}
+	
+	@PatchMapping("/{id}/status")
+	public ResponseEntity<CategoryResponse> updateCategoryStatus(@PathVariable Long id, @RequestBody StatusUpdateRequest request){
+		return ResponseEntity.ok(categoryService.updateCategoryStatus(id, request.isActive()));
 	}
 	
 	@DeleteMapping("/{id}")
