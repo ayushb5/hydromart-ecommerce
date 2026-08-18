@@ -32,7 +32,7 @@ public class User {
 	private String password;
 	@Enumerated(EnumType.STRING)
 	private Role role;
-	private boolean isActive;
+	private boolean active;
 	private LocalDateTime createdAt;
 	private LocalDateTime updatedAt;
 }
