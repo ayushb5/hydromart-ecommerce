@@ -33,6 +33,14 @@ public class User {
 	@Enumerated(EnumType.STRING)
 	private Role role;
 	private boolean active;
+	private String phone;
+//	contact details
+	private String addressLine1;
+	private String addressLine2;
+	private String city;
+	private String state;
+	private String postalCode;
+	private String country;
 	private LocalDateTime createdAt;
 	private LocalDateTime updatedAt;
 }

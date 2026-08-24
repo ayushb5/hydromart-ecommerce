@@ -66,6 +66,11 @@ public class OrderServiceImpl implements OrderService {
 		return response;
 	}
 
+	private String buildShippingAddress(User user) {
+		return String.join(", ", user.getAddressLine1(), user.getAddressLine2(), user.getCity(), user.getState(),
+				user.getPostalCode(), user.getCountry());
+	}
+
 	@Override
 	public OrderResponse placeOrder(Long userId, PlaceOrderRequest request) {
 		User user = userRepository.findById(userId).orElseThrow(() -> new UsernameNotFoundException("User not found"));
@@ -79,7 +84,11 @@ public class OrderServiceImpl implements OrderService {
 		Order order = new Order();
 		order.setUser(user);
 		order.setStatus(OrderStatus.PENDING);
-		order.setShippingAddress(request.getShippingAddress());
+		if (user.getAddressLine1() == null || user.getCity() == null || user.getState() == null
+				|| user.getPostalCode() == null || user.getCountry() == null) {
+			throw new IllegalArgumentException("Please complete your profile before placing an order.");
+		}
+			order.setShippingAddress(buildShippingAddress(user));
 		order.setPaymentMethod(request.getPaymentMethod());
 
 		order.setCreatedAt(LocalDateTime.now());

@@ -12,6 +12,8 @@ import com.hydromart.dto.auth.AuthResponse;
 import com.hydromart.dto.auth.LoginRequest;
 import com.hydromart.dto.auth.RegisterRequest;
 import com.hydromart.dto.auth.RegisterResponse;
+import com.hydromart.dto.user.UserProfileRequest;
+import com.hydromart.dto.user.UserProfileResponse;
 import com.hydromart.entity.User;
 import com.hydromart.enums.Role;
 import com.hydromart.exception.EmailAlreadyExistsException;
@@ -28,6 +30,23 @@ public class UserServiceImpl implements UserService {
 
 	private final UserRepository userRepository;
 	private final PasswordEncoder passwordEncoder;
+	
+	private UserProfileResponse mapToUserProfileResponse(User user) {
+		UserProfileResponse response=new UserProfileResponse();
+		
+		response.setId(user.getId());
+		response.setEmail(user.getEmail());
+		response.setRole(user.getRole().name());
+		response.setPhone(user.getPhone());
+		response.setAddressLine1(user.getAddressLine1());
+		response.setAddressLine2(user.getAddressLine2());
+		response.setCity(user.getCity());
+		response.setState(user.getState());
+		response.setPostalCode(user.getPostalCode());
+		response.setCountry(user.getCountry());
+		
+		return response;
+	}
 
 	@Override
 	public RegisterResponse registerUser(RegisterRequest request) {
@@ -71,6 +90,34 @@ public class UserServiceImpl implements UserService {
 	public List<User> getAllUsers() {
 		// TODO Auto-generated method stub
 		return null;
+	}
+
+	@Override
+	public UserProfileResponse getProfile(Long userId) {
+		User user=userRepository.findById(userId)
+				.orElseThrow(()->new UserNotFoundException("User not found"));
+		
+		return mapToUserProfileResponse(user);
+	}
+
+	@Override
+	public UserProfileResponse updateProfile(Long userId, UserProfileRequest request) {
+		User user=userRepository.findById(userId)
+				.orElseThrow(()->new UserNotFoundException("User not found"));
+		
+		user.setPhone(request.getPhone());
+		user.setAddressLine1(request.getAddressLine1());
+		user.setAddressLine2(request.getAddressLine2());
+		user.setCity(request.getCity());
+		user.setState(request.getState());
+		user.setPostalCode(request.getPostalCode());
+		user.setCountry(request.getCountry());
+		
+		user.setUpdatedAt(LocalDateTime.now());
+		
+		User updatedUser=userRepository.save(user);
+		
+		return mapToUserProfileResponse(updatedUser);
 	}
 
 }
