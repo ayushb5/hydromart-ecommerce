@@ -16,6 +16,8 @@ import com.hydromart.entity.Product;
 import com.hydromart.entity.User;
 import com.hydromart.exception.CartItemNotFoundException;
 import com.hydromart.exception.CartNotFoundException;
+import com.hydromart.exception.InsufficientStockException;
+import com.hydromart.exception.InvalidQuantityException;
 import com.hydromart.exception.ProductNotFoundException;
 import com.hydromart.exception.UserNotFoundException;
 import com.hydromart.repository.CartItemRepository;
@@ -24,10 +26,12 @@ import com.hydromart.repository.ProductRepository;
 import com.hydromart.repository.UserRepository;
 import com.hydromart.service.CartService;
 
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 
 @Service
 @RequiredArgsConstructor
+@Transactional
 public class CartServiceImpl implements CartService {
 
 	private final UserRepository userRepository;
@@ -78,7 +82,7 @@ public class CartServiceImpl implements CartService {
 			throw new ProductNotFoundException("Product is not available");
 		}
 		if (request.getQuantity() <= 0) {
-			throw new IllegalArgumentException("Quantity must be greater than zero");
+			throw new InvalidQuantityException("Quantity must be greater than zero");
 		}
 
 		Cart cart = cartRepository.findByUser(user).orElseGet(() -> {
@@ -94,20 +98,25 @@ public class CartServiceImpl implements CartService {
 
 		if (existingItem.isPresent()) {
 			CartItem cartItem = existingItem.get();
-			
-			int newQuantity=cartItem.getQuantity()+request.getQuantity();
-			if(newQuantity>product.getStockQuantity()) {
-				throw new IllegalArgumentException("Insufficient stock available");
+
+			int newQuantity = cartItem.getQuantity() + request.getQuantity();
+			if (newQuantity > product.getStockQuantity()) {
+				throw new InsufficientStockException("Insufficient stock available");
 			}
 			cartItem.setQuantity(cartItem.getQuantity() + request.getQuantity());
 			cartItemRepository.save(cartItem);
 		} else {
+			if (request.getQuantity() > product.getStockQuantity()) {
+				throw new InsufficientStockException("Insufficient stock available");
+			}
+			
 			CartItem cartItem = new CartItem();
 			cartItem.setCart(cart);
 			cartItem.setProduct(product);
 			cartItem.setQuantity(request.getQuantity());
 
 			cartItemRepository.save(cartItem);
+			cart.getCartItems().add(cartItem);
 		}
 
 		cart.setUpdatedAt(LocalDateTime.now());
@@ -139,19 +148,21 @@ public class CartServiceImpl implements CartService {
 		}
 
 		if (quantity <= 0) {
-			throw new IllegalArgumentException("Quantity must be greater than zero");
+			throw new InvalidQuantityException("Quantity must be greater than zero");
 		}
-		
-		if(quantity>cartItem.getProduct().getStockQuantity()) {
-			throw new IllegalArgumentException("Insufficient stock available");
+
+		if (quantity > cartItem.getProduct().getStockQuantity()) {
+			throw new InsufficientStockException("Insufficient stock available");
 		}
-		
+
 		cartItem.setQuantity(quantity);
 		cartItemRepository.save(cartItem);
-		
+
 		cart.setUpdatedAt(LocalDateTime.now());
 		cartRepository.save(cart);
-		
+
+		cart = cartRepository.findByUser(user).orElseThrow(() -> new CartNotFoundException("Cart not found"));
+
 		return mapToCartResponse(cart);
 	}
 
@@ -167,9 +178,10 @@ public class CartServiceImpl implements CartService {
 		if (!cartItem.getCart().getId().equals(cart.getId())) {
 			throw new CartItemNotFoundException("Cart item not found");
 		}
-		
+
+		cart.getCartItems().remove(cartItem);
 		cartItemRepository.delete(cartItem);
-		
+
 		cart.setUpdatedAt(LocalDateTime.now());
 		cartRepository.save(cart);
 	}
@@ -180,10 +192,11 @@ public class CartServiceImpl implements CartService {
 
 		Cart cart = cartRepository.findByUser(user).orElseThrow(() -> new CartNotFoundException("Cart not found"));
 
+		cart.getCartItems().clear();
 		cartItemRepository.deleteByCart(cart);
-		
+
 		cart.setUpdatedAt(LocalDateTime.now());
-		
+
 		cartRepository.save(cart);
 	}
 
