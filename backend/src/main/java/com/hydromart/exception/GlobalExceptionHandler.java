@@ -7,6 +7,12 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 
 @RestControllerAdvice
 public class GlobalExceptionHandler {
+	@ExceptionHandler(UserNotFoundException.class)
+	public ResponseEntity<String> handleUserNotFoundException(UserNotFoundException ex){
+		return ResponseEntity
+				.status(HttpStatus.CONFLICT)
+				.body(ex.getMessage());
+	}
 	
 	@ExceptionHandler(EmailAlreadyExistsException.class)
 	public ResponseEntity<String> handleEmaillAlreadyExistsException(EmailAlreadyExistsException ex){
@@ -57,6 +63,25 @@ public class GlobalExceptionHandler {
 				.body(ex.getMessage());
 	}
 	
+	@ExceptionHandler(OrderNotFoundException.class)
+	public ResponseEntity<String> handleOrderNotFoundException(OrderNotFoundException ex){
+		return ResponseEntity
+				.status(HttpStatus.NOT_FOUND)
+				.body(ex.getMessage());
+	}
 	
+	@ExceptionHandler(InsufficientStockException.class)
+	public ResponseEntity<String> handleInsufficientStockException(InsufficientStockException ex){
+		return ResponseEntity
+				.status(HttpStatus.BAD_REQUEST)
+				.body(ex.getMessage());
+	}
+	
+	@ExceptionHandler(InvalidQuantityException.class)
+	public ResponseEntity<String> handleInvalidQuantityException(InvalidQuantityException ex){
+		return ResponseEntity
+				.status(HttpStatus.BAD_REQUEST)
+				.body(ex.getMessage());
+	}
 	
 }
