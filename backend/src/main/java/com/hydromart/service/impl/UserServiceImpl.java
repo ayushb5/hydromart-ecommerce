@@ -20,6 +20,7 @@ import com.hydromart.exception.EmailAlreadyExistsException;
 import com.hydromart.exception.InvalidCredentialsException;
 import com.hydromart.exception.UserNotFoundException;
 import com.hydromart.repository.UserRepository;
+import com.hydromart.security.JwtService;
 import com.hydromart.service.UserService;
 
 import lombok.RequiredArgsConstructor;
@@ -30,6 +31,7 @@ public class UserServiceImpl implements UserService {
 
 	private final UserRepository userRepository;
 	private final PasswordEncoder passwordEncoder;
+	private final JwtService jwtService;
 	
 	private UserProfileResponse mapToUserProfileResponse(User user) {
 		UserProfileResponse response=new UserProfileResponse();
@@ -77,7 +79,9 @@ public class UserServiceImpl implements UserService {
 			throw new InvalidCredentialsException("Invalid email or password");
 		}
 		
-		return new AuthResponse("Login successful",user.getEmail(),user.getRole());
+		String token=jwtService.generateToken(user.getEmail());
+		
+		return new AuthResponse("Login successful",user.getEmail(),user.getRole(),token);
 	}
 
 	@Override
@@ -93,16 +97,16 @@ public class UserServiceImpl implements UserService {
 	}
 
 	@Override
-	public UserProfileResponse getProfile(Long userId) {
-		User user=userRepository.findById(userId)
+	public UserProfileResponse getProfile(String email) {
+		User user=userRepository.findByEmail(email)
 				.orElseThrow(()->new UserNotFoundException("User not found"));
 		
 		return mapToUserProfileResponse(user);
 	}
 
 	@Override
-	public UserProfileResponse updateProfile(Long userId, UserProfileRequest request) {
-		User user=userRepository.findById(userId)
+	public UserProfileResponse updateProfile(String email, UserProfileRequest request) {
+		User user=userRepository.findByEmail(email)
 				.orElseThrow(()->new UserNotFoundException("User not found"));
 		
 		user.setPhone(request.getPhone());

@@ -19,7 +19,7 @@ public interface UserService {
 
 	List<User> getAllUsers();
 
-	UserProfileResponse getProfile(Long userId);
+	UserProfileResponse getProfile(String email);
 
-	UserProfileResponse updateProfile(Long userId, UserProfileRequest request);
+	UserProfileResponse updateProfile(String email, UserProfileRequest request);
 }

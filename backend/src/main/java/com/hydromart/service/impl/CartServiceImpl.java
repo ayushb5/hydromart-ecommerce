@@ -72,8 +72,8 @@ public class CartServiceImpl implements CartService {
 	}
 
 	@Override
-	public CartResponse addToCart(Long userId, AddToCartRequest request) {
-		User user = userRepository.findById(userId).orElseThrow(() -> new UserNotFoundException("User not found"));
+	public CartResponse addToCart(String email, AddToCartRequest request) {
+		User user = userRepository.findByEmail(email).orElseThrow(() -> new UserNotFoundException("User not found"));
 
 		Product product = productRepository.findById(request.getProductId())
 				.orElseThrow(() -> new ProductNotFoundException("Product not found"));
@@ -126,8 +126,8 @@ public class CartServiceImpl implements CartService {
 	}
 
 	@Override
-	public CartResponse getCart(Long userId) {
-		User user = userRepository.findById(userId).orElseThrow(() -> new UserNotFoundException("User not found"));
+	public CartResponse getCart(String email) {
+		User user = userRepository.findByEmail(email).orElseThrow(() -> new UserNotFoundException("User not found"));
 
 		Cart cart = cartRepository.findByUser(user).orElseThrow(() -> new CartNotFoundException("Cart not found"));
 
@@ -135,8 +135,8 @@ public class CartServiceImpl implements CartService {
 	}
 
 	@Override
-	public CartResponse updateQuantity(Long userId, Long cartItemId, Integer quantity) {
-		User user = userRepository.findById(userId).orElseThrow(() -> new UserNotFoundException("User not found"));
+	public CartResponse updateQuantity(String email, Long cartItemId, Integer quantity) {
+		User user = userRepository.findByEmail(email).orElseThrow(() -> new UserNotFoundException("User not found"));
 
 		Cart cart = cartRepository.findByUser(user).orElseThrow(() -> new CartNotFoundException("Cart not found"));
 
@@ -167,8 +167,8 @@ public class CartServiceImpl implements CartService {
 	}
 
 	@Override
-	public void removeItem(Long userId, Long cartItemId) {
-		User user = userRepository.findById(userId).orElseThrow(() -> new UserNotFoundException("User not found"));
+	public void removeItem(String email, Long cartItemId) {
+		User user = userRepository.findByEmail(email).orElseThrow(() -> new UserNotFoundException("User not found"));
 
 		Cart cart = cartRepository.findByUser(user).orElseThrow(() -> new CartNotFoundException("Cart not found"));
 
@@ -187,8 +187,8 @@ public class CartServiceImpl implements CartService {
 	}
 
 	@Override
-	public void clearCart(Long userId) {
-		User user = userRepository.findById(userId).orElseThrow(() -> new UserNotFoundException("User not found"));
+	public void clearCart(String email) {
+		User user = userRepository.findByEmail(email).orElseThrow(() -> new UserNotFoundException("User not found"));
 
 		Cart cart = cartRepository.findByUser(user).orElseThrow(() -> new CartNotFoundException("Cart not found"));
 

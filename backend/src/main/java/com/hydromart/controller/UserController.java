@@ -1,6 +1,7 @@
 package com.hydromart.controller;
 
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PutMapping;
@@ -21,13 +22,13 @@ import lombok.RequiredArgsConstructor;
 public class UserController {
 	private final UserService userService;
 
-	@GetMapping("/{userId}/profile")
-	public ResponseEntity<UserProfileResponse> getProfile(@PathVariable Long userId) {
-		return ResponseEntity.ok(userService.getProfile(userId));
+	@GetMapping("/profile")
+	public ResponseEntity<UserProfileResponse> getProfile(Authentication authentication) {
+		return ResponseEntity.ok(userService.getProfile(authentication.getName()));
 	}
 	
-	@PutMapping("/{userId}/profile")
-	public ResponseEntity<UserProfileResponse> updateProfile(@PathVariable Long userId,@RequestBody UserProfileRequest request){
-		return ResponseEntity.ok(userService.updateProfile(userId, request));
+	@PutMapping("/profile")
+	public ResponseEntity<UserProfileResponse> updateProfile(Authentication authentication,@RequestBody UserProfileRequest request){
+		return ResponseEntity.ok(userService.updateProfile(authentication.getName(), request));
 	}
 }

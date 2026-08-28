@@ -10,6 +10,7 @@ import org.springframework.stereotype.Service;
 import com.hydromart.dto.order.OrderItemResponse;
 import com.hydromart.dto.order.OrderResponse;
 import com.hydromart.dto.order.PlaceOrderRequest;
+import com.hydromart.dto.order.UpdateOrderStatusRequest;
 import com.hydromart.entity.Cart;
 import com.hydromart.entity.CartItem;
 import com.hydromart.entity.Order;
@@ -18,6 +19,7 @@ import com.hydromart.entity.Product;
 import com.hydromart.entity.User;
 import com.hydromart.enums.OrderStatus;
 import com.hydromart.exception.CartNotFoundException;
+import com.hydromart.exception.InvalidOrderStatusException;
 import com.hydromart.exception.OrderNotFoundException;
 import com.hydromart.repository.CartItemRepository;
 import com.hydromart.repository.CartRepository;
@@ -71,9 +73,18 @@ public class OrderServiceImpl implements OrderService {
 				user.getPostalCode(), user.getCountry());
 	}
 
+	private boolean isValidStatusTransition(OrderStatus current, OrderStatus next) {
+		return switch (current) {
+		case PENDING -> next == OrderStatus.CONFIRMED || next == OrderStatus.CANCELLED;
+		case CONFIRMED -> next == OrderStatus.SHIPPED;
+		case SHIPPED -> next == OrderStatus.DELIVERED;
+		case DELIVERED, CANCELLED -> false;
+		};
+	}
+
 	@Override
-	public OrderResponse placeOrder(Long userId, PlaceOrderRequest request) {
-		User user = userRepository.findById(userId).orElseThrow(() -> new UsernameNotFoundException("User not found"));
+	public OrderResponse placeOrder(String email, PlaceOrderRequest request) {
+		User user = userRepository.findByEmail(email).orElseThrow(() -> new UsernameNotFoundException("User not found"));
 
 		Cart cart = cartRepository.findByUser(user).orElseThrow(() -> new CartNotFoundException("Cart not found"));
 
@@ -88,7 +99,7 @@ public class OrderServiceImpl implements OrderService {
 				|| user.getPostalCode() == null || user.getCountry() == null) {
 			throw new IllegalArgumentException("Please complete your profile before placing an order.");
 		}
-			order.setShippingAddress(buildShippingAddress(user));
+		order.setShippingAddress(buildShippingAddress(user));
 		order.setPaymentMethod(request.getPaymentMethod());
 
 		order.setCreatedAt(LocalDateTime.now());
@@ -136,16 +147,16 @@ public class OrderServiceImpl implements OrderService {
 	}
 
 	@Override
-	public List<OrderResponse> getUserOrders(Long userId) {
-		User user = userRepository.findById(userId).orElseThrow(() -> new UsernameNotFoundException("User not found"));
+	public List<OrderResponse> getUserOrders(String email) {
+		User user = userRepository.findByEmail(email).orElseThrow(() -> new UsernameNotFoundException("User not found"));
 
 		return orderRepository.findByUser(user).stream().map(order -> mapToOrderResponse(order)).toList();
 
 	}
 
 	@Override
-	public OrderResponse getOrderById(Long userId, Long orderId) {
-		User user = userRepository.findById(userId).orElseThrow(() -> new UsernameNotFoundException("User not found"));
+	public OrderResponse getOrderById(String email, Long orderId) {
+		User user = userRepository.findByEmail(email).orElseThrow(() -> new UsernameNotFoundException("User not found"));
 
 		Order order = orderRepository.findById(orderId)
 				.orElseThrow(() -> new OrderNotFoundException("Order not found"));
@@ -158,8 +169,8 @@ public class OrderServiceImpl implements OrderService {
 	}
 
 	@Override
-	public OrderResponse cancelOrder(Long userId, Long orderId) {
-		User user = userRepository.findById(userId).orElseThrow(() -> new UsernameNotFoundException("User not found"));
+	public OrderResponse cancelOrder(String email, Long orderId) {
+		User user = userRepository.findByEmail(email).orElseThrow(() -> new UsernameNotFoundException("User not found"));
 
 		Order order = orderRepository.findById(orderId)
 				.orElseThrow(() -> new OrderNotFoundException("Order not found"));
@@ -187,4 +198,37 @@ public class OrderServiceImpl implements OrderService {
 		return mapToOrderResponse(savedOrder);
 	}
 
+	@Override
+	public List<OrderResponse> getAllOrders() {
+		return orderRepository.findAll().stream().map(order -> mapToOrderResponse(order)).toList();
+	}
+
+	@Override
+	public OrderResponse getOrderById(Long orderId) {
+		Order order = orderRepository.findById(orderId)
+				.orElseThrow(() -> new OrderNotFoundException("Order not found"));
+
+		return mapToOrderResponse(order);
+	}
+
+	@Override
+	public OrderResponse updateOrderStatus(Long orderId, UpdateOrderStatusRequest request) {
+		Order order = orderRepository.findById(orderId)
+				.orElseThrow(() -> new OrderNotFoundException("Order not found"));
+
+		OrderStatus currentStatus = order.getStatus();
+		OrderStatus newStatus = request.getStatus();
+
+		if (!isValidStatusTransition(currentStatus, newStatus)) {
+			throw new InvalidOrderStatusException(
+					"Cannot change order status from " + currentStatus + "to" + newStatus);
+		}
+
+		order.setStatus(newStatus);
+		order.setUpdatedAt(LocalDateTime.now());
+
+		Order savedOrder = orderRepository.save(order);
+
+		return mapToOrderResponse(savedOrder);
+	}
 }

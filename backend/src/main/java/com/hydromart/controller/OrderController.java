@@ -3,6 +3,7 @@ package com.hydromart.controller;
 import java.util.List;
 
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -24,24 +25,24 @@ import lombok.RequiredArgsConstructor;
 public class OrderController {
 	private final OrderService orderService;
 
-	@PostMapping("/{userId}")
-	public ResponseEntity<OrderResponse> placeOrder(@PathVariable Long userId,
+	@PostMapping
+	public ResponseEntity<OrderResponse> placeOrder(Authentication authentication,
 			@RequestBody @Valid PlaceOrderRequest request) {
-		return ResponseEntity.ok(orderService.placeOrder(userId, request));
+		return ResponseEntity.ok(orderService.placeOrder(authentication.getName(), request));
 	}
 
-	@GetMapping("/{userId}")
-	public ResponseEntity<List<OrderResponse>> getUserOrders(@PathVariable Long userId) {
-		return ResponseEntity.ok(orderService.getUserOrders(userId));
+	@GetMapping
+	public ResponseEntity<List<OrderResponse>> getUserOrders(Authentication authentication) {
+		return ResponseEntity.ok(orderService.getUserOrders(authentication.getName()));
 	}
 
-	@GetMapping("/{userId}/{orderId}")
-	public ResponseEntity<OrderResponse> getOrderById(@PathVariable Long userId, @PathVariable Long orderId) {
-		return ResponseEntity.ok(orderService.getOrderById(userId, orderId));
+	@GetMapping("/{orderId}")
+	public ResponseEntity<OrderResponse> getOrderById(Authentication authentication, @PathVariable Long orderId) {
+		return ResponseEntity.ok(orderService.getOrderById(authentication.getName(), orderId));
 	}
 
-	@PutMapping("/{userId}/{orderId}/cancel")
-	public ResponseEntity<OrderResponse> cancelOrder(@PathVariable Long userId, @PathVariable Long orderId) {
-		return ResponseEntity.ok(orderService.cancelOrder(userId, orderId));
+	@PutMapping("/{orderId}/cancel")
+	public ResponseEntity<OrderResponse> cancelOrder(Authentication authentication, @PathVariable Long orderId) {
+		return ResponseEntity.ok(orderService.cancelOrder(authentication.getName(), orderId));
 	}
 }

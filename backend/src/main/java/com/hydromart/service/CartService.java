@@ -4,13 +4,13 @@ import com.hydromart.dto.cart.AddToCartRequest;
 import com.hydromart.dto.cart.CartResponse;
 
 public interface CartService {
-	CartResponse addToCart(Long userId, AddToCartRequest request);
+	CartResponse addToCart(String email, AddToCartRequest request);
 	
-	CartResponse getCart(Long userId);
+	CartResponse getCart(String email);
 	
-	CartResponse updateQuantity(Long userId, Long cartItemId, Integer quantity);
+	CartResponse updateQuantity(String email, Long cartItemId, Integer quantity);
 	
-	void removeItem(Long userId, Long cartItemId);
+	void removeItem(String email, Long cartItemId);
 	
-	void clearCart(Long userId);
+	void clearCart(String email);
 }
